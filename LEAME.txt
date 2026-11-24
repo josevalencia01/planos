@@ -1,0 +1,31 @@
+PLANOS DE FUNDACIÓN HMV - VERSIÓN WEB
+=====================================
+
+Es el mismo programa (marco MLDV/MB y desconectador tripolar) corriendo DENTRO DEL NAVEGADOR:
+no hay que instalar Python ni nada. Funciona en Chrome, Edge y Firefox recientes.
+
+CÓMO PUBLICARLO EN INTERNET (elija una opción; subir esta carpeta COMPLETA, tal cual)
+1) Netlify (lo más fácil): entre a https://app.netlify.com/drop , cree su cuenta gratis y arrastre
+   esta carpeta a la página. Le da un link (https://algo.netlify.app) para usar y compartir.
+2) GitHub Pages: cree un repositorio, suba el contenido de esta carpeta y active
+   Settings -> Pages -> "Deploy from a branch" (rama main, carpeta /). Link: https://usuario.github.io/repositorio
+3) Servidor de la empresa (IIS, Apache, Nginx): copie la carpeta como un sitio estático.
+   Debe servir los archivos .wasm con el tipo "application/wasm" (en IIS: agregar el tipo MIME .wasm).
+
+IMPORTANTE: no funciona abriendo index.html con doble clic (el navegador bloquea Python desde
+archivos locales); tiene que estar publicado en un sitio web (https://...).
+
+USO
+- La primera vez tarda 20-40 s en cargar Python y la plantilla; después cada cambio se redibuja en 1-3 s.
+- Tipo de plano y Caso arriba; Parámetros / Listas (notas, referencias, revisiones) / Cotas
+  (valor que cambia el dibujo, texto, ocultar; estribos uno por uno o por grupos) / Resumen.
+- «DXF + LISP (.zip)»: DXF con capas y estilos HMV y tablas REALES con fórmulas (AutoCAD y Open CAD
+  Studio), el LISP para AutoCAD, el caso (JSON) y los CTB.
+- «PDF»: la lámina ploteada con el CTB (GN-PLOT-HMV o GN-FIT-HMV según el parámetro).
+- «Guardar caso» / «Abrir caso…»: guarda o abre los parámetros (JSON), compatibles con el programa de escritorio.
+- DWG: la web entrega DXF; ábralo en Open CAD Studio o AutoCAD y use Guardar como -> DWG.
+  Las plantillas y formatos propios se suben como DXF.
+
+Contenido: index.html y worker.js (la página), app.zip (el programa de planos, plantillas, CTB,
+fuentes y casos), lib/ (jsPDF y svg2pdf, para el PDF) y pyodide/ (Python para el navegador, con
+numpy, ezdxf, fonttools, pillow y openpyxl). Todo funciona sin conexión a otros sitios.

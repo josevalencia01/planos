@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Planos de Fundación HMV</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Mesa de dibujo: barra superior con el plano en curso, panel de parámetros a la izquierda, lámina a la derecha */
+:root {
+  --bg: #eef1ef; --panel: #ffffff; --panel-2: #f5f7f6; --ink: #1b2422; --muted: #5d6a66; --line: #d4dcd8;
+  --accent: #0e6b57; --accent-2: #d9ece6; --accent-ink: #ffffff;
+  --warn: #8a5300; --warn-bg: #fff3dc; --err: #b42318; --err-bg: #fdeceb; --ok: #1f7a3a;
+  --paper: #ffffff; --mesa: #dfe5e2;
+  --f-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-cond: "IBM Plex Sans Condensed", "IBM Plex Sans", "Arial Narrow", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101615; --panel: #172120; --panel-2: #1c2725; --ink: #e3ebe8; --muted: #98a7a2; --line: #2c3a37;
+  --accent: #3cb894; --accent-2: #173a31; --accent-ink: #08120f;
+  --warn: #f0b44c; --warn-bg: #2d2311; --err: #ff8a80; --err-bg: #341715; --ok: #6fd18c;
+  --paper: #f7f9f8; --mesa: #0c1110; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #101615; --panel: #172120; --panel-2: #1c2725; --ink: #e3ebe8; --muted: #98a7a2; --line: #2c3a37;
+  --accent: #3cb894; --accent-2: #173a31; --accent-ink: #08120f;
+  --warn: #f0b44c; --warn-bg: #2d2311; --err: #ff8a80; --err-bg: #341715; --ok: #6fd18c;
+  --paper: #f7f9f8; --mesa: #0c1110; color-scheme: dark; }
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-ui); font-size: 14px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+.app { display: grid; grid-template-rows: auto 1fr; height: 100%; }
+button, select, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* barra superior */
+.barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line);
+  padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.marca { display: flex; flex-direction: column; gap: 2px; min-width: 0; margin-right: auto; }
+.marca h1 { margin: 0; font-family: var(--f-cond); font-weight: 600; font-size: 18px; letter-spacing: .01em; }
+.codigo { font-family: var(--f-mono); font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60vw; }
+.grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.campo-sup { display: flex; flex-direction: column; gap: 2px; }
+.campo-sup span { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+select, input[type="text"], input[type="number"], textarea { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 8px; min-width: 0; }
+textarea { width: 100%; resize: vertical; line-height: 1.4; }
+.btn { border: 1px solid var(--line); background: var(--panel-2); border-radius: var(--r); padding: 7px 12px; cursor: pointer; white-space: nowrap; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.prim { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn.chico { padding: 3px 8px; font-size: 12px; }
+.estado { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); max-width: 320px; }
+.estado { flex-wrap: wrap; row-gap: 0; }
+.autog { flex-basis: 100%; padding-left: 17px; font-size: 11px; opacity: .8; }
+.autog:empty { display: none; }
+.punto { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); flex: none; }
+.estado[data-e="listo"] .punto { background: var(--ok); }
+.estado[data-e="error"] .punto { background: var(--err); }
+.estado[data-e="trabajando"] .punto { animation: latido 1s ease-in-out infinite; }
+@keyframes latido { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .estado .punto { animation: none !important; } }
+
+/* cuerpo */
+.cuerpo { display: grid; grid-template-columns: minmax(330px, 410px) 1fr; min-height: 0; }
+.panel { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.pestanas { display: flex; border-bottom: 1px solid var(--line); padding-left: max(8px, env(safe-area-inset-left, 0px)); }
+.pestanas button { flex: 1; background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 6px; cursor: pointer; color: var(--muted); font-weight: 500; }
+.pestanas button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.contenido { overflow: auto; padding-block: 12px 24px; padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+details.sec { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); }
+details.sec > summary { cursor: pointer; padding: 9px 12px; font-family: var(--f-cond); font-weight: 600; font-size: 15px; list-style: none; display: flex; justify-content: space-between; gap: 8px; }
+details.sec > summary::after { content: "+"; color: var(--muted); font-family: var(--f-mono); }
+details.sec[open] > summary::after { content: "−"; }
+.campos { display: grid; grid-template-columns: 1fr 132px; gap: 8px 10px; padding: 4px 12px 12px; align-items: center; }
+.campos label { font-size: 13px; color: var(--muted); line-height: 1.3; }
+.campos .ancho { grid-column: 1 / -1; }
+.campos input, .campos select { width: 100%; }
+.campos input[type="number"] { font-family: var(--f-mono); text-align: right; }
+.nota { font-size: 12px; color: var(--muted); line-height: 1.45; }
+.fila-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* listas */
+.lista { display: flex; flex-direction: column; gap: 8px; padding: 4px 12px 12px; }
+.item { display: grid; grid-template-columns: 26px 1fr auto; gap: 6px; align-items: start; }
+.item .n { font-family: var(--f-mono); font-size: 12px; color: var(--muted); padding-top: 7px; text-align: right; }
+.item .acc { display: flex; flex-direction: column; gap: 2px; }
+.item .acc button { border: 0; background: none; cursor: pointer; color: var(--muted); padding: 1px 4px; font-size: 13px; }
+.item .acc button:hover { color: var(--accent); }
+.multi { display: grid; gap: 4px; }
+
+/* tablas */
+.tabla-env { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+table { border-collapse: collapse; width: 100%; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 5px 7px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+th { font-weight: 600; color: var(--muted); background: var(--panel-2); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+td.num { text-align: right; font-family: var(--f-mono); }
+td input { width: 64px; padding: 3px 5px; font-family: var(--f-mono); text-align: right; }
+td input.txt { width: 110px; text-align: left; font-family: var(--f-ui); }
+.cid { font-size: 12px; color: var(--muted); white-space: normal; min-width: 120px; max-width: 150px; line-height: 1.3; }
+.avisos { display: flex; flex-direction: column; gap: 6px; }
+.aviso { background: var(--warn-bg); color: var(--warn); border-radius: var(--r); padding: 8px 10px; font-size: 13px; }
+.error { background: var(--err-bg); color: var(--err); border-radius: var(--r); padding: 8px 10px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.cifra { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 10px; }
+.cifra b { display: block; font-family: var(--f-mono); font-size: 16px; font-weight: 500; }
+.cifra span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-2); border-radius: 99px; padding: 2px 4px 2px 9px; font-family: var(--f-mono); font-size: 12px; }
+.chip button { border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 13px; line-height: 1; padding: 2px 4px; }
+.chip button:hover { color: var(--err); }
+.subt { font-family: var(--f-cond); font-weight: 600; font-size: 14px; margin: 4px 0 0; }
+
+/* visor */
+.visor { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.vistas { display: flex; gap: 4px; overflow-x: auto; padding-block: 8px; padding-left: 10px; padding-right: max(10px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); background: var(--panel); }
+.vistas button { border: 1px solid var(--line); background: var(--panel-2); border-radius: 99px; padding: 5px 11px; cursor: pointer; white-space: nowrap; font-family: var(--f-cond); font-weight: 500; font-size: 13px; }
+.vistas button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.mesa { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--mesa); cursor: grab; touch-action: none; }
+.mesa.arrastrando { cursor: grabbing; }
+.hoja { position: absolute; left: 0; top: 0; transform-origin: 0 0; background: var(--paper); box-shadow: 0 2px 14px rgb(0 0 0 / .18); }
+.hoja svg { display: block; }
+.controles { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: 12px; display: flex; gap: 6px; }
+.controles button { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); width: 34px; height: 34px; cursor: pointer; font-size: 16px; }
+.leyenda { position: absolute; left: 12px; bottom: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 5px 9px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.cargando { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 24px; }
+.cargando b { display: block; font-family: var(--f-cond); font-size: 18px; color: var(--ink); margin-bottom: 6px; }
+.cargando .barra-p { width: min(320px, 70vw); height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; margin: 14px auto 0; }
+.cargando .barra-p i { display: block; height: 100%; width: 35%; background: var(--accent); animation: avance 1.4s ease-in-out infinite; }
+@keyframes avance { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
+@media (prefers-reduced-motion: reduce) { .cargando .barra-p i { animation: none; width: 100%; } }
+
+@media (max-width: 860px) {
+  .cuerpo { grid-template-columns: 1fr; grid-template-rows: auto minmax(420px, 70vh); }
+  .panel { border-right: 0; border-bottom: 1px solid var(--line); max-height: 60vh; }
+  .visor { order: -1; }
+  .codigo { max-width: 90vw; }
+}
+</style>
+
+<div class="app">
+  <header class="barra">
+    <div class="marca">
+      <h1>Planos de Fundación HMV</h1>
+      <div class="codigo" id="codigo">Preparando…</div>
+    </div>
+    <div class="grupo">
+      <label class="campo-sup"><span>Tipo de plano</span>
+        <select id="sel-tipo" disabled>
+          <option value="marco">Marco (MLDV / MB…)</option>
+          <option value="dt">Desconectador tripolar</option>
+        </select></label>
+      <label class="campo-sup"><span>Caso</span>
+        <select id="sel-caso" disabled></select></label>
+    </div>
+    <div class="grupo">
+      <button class="btn" id="btn-abrir" disabled>Abrir caso…</button>
+      <button class="btn" id="btn-deshacer" title="Deshacer (Ctrl+Z)" aria-label="Deshacer" disabled>↶</button>
+      <button class="btn" id="btn-rehacer" title="Rehacer (Ctrl+Y)" aria-label="Rehacer" disabled>↷</button>
+      <button class="btn" id="btn-guardar" disabled>Guardar caso</button>
+      <button class="btn prim" id="btn-zip" disabled>DXF + LISP (.zip)</button>
+      <button class="btn prim" id="btn-pdf" disabled>PDF</button>
+      <input type="file" id="f-caso" accept=".json,application/json" hidden>
+      <input type="file" id="f-plantilla" accept=".dxf" hidden>
+      <input type="file" id="f-formato" accept=".dxf" hidden>
+      <input type="file" id="f-planilla" accept=".xlsx,.xlsm" hidden>
+    </div>
+    <div class="estado" id="estado" data-e="trabajando" role="status" aria-live="polite"><i class="punto"></i><span id="estado-txt">Cargando Python en el navegador…</span><span id="autoguardado" class="autog" title="Cada cambio se guarda solo en este navegador"></span></div>
+  </header>
+
+  <div class="cuerpo">
+    <aside class="panel">
+      <div class="pestanas" role="tablist">
+        <button role="tab" id="t-param" aria-selected="true">Parámetros</button>
+        <button role="tab" id="t-listas" aria-selected="false">Listas</button>
+        <button role="tab" id="t-cotas" aria-selected="false">Cotas</button>
+        <button role="tab" id="t-resumen" aria-selected="false">Resumen</button>
+      </div>
+      <div class="contenido" id="p-param"><p class="nota">Los parámetros aparecen cuando termina de cargar Python (la primera vez tarda unos 20–40 s).</p></div>
+      <div class="contenido" id="p-listas" hidden></div>
+      <div class="contenido" id="p-cotas" hidden></div>
+      <div class="contenido" id="p-resumen" hidden></div>
+    </aside>
+
+    <section class="visor">
+      <nav class="vistas" id="vistas" aria-label="Vistas del plano"></nav>
+      <div class="mesa" id="mesa">
+        <div class="hoja" id="hoja"></div>
+        <div class="cargando" id="cargando"><div><b>Preparando la mesa de dibujo</b><span id="cargando-txt">Cargando Python, ezdxf y el programa de planos…</span><div class="barra-p"><i></i></div></div></div>
+        <div class="leyenda" id="leyenda" hidden></div>
+        <div class="controles">
+          <button id="z-mas" aria-label="Acercar">+</button>
+          <button id="z-menos" aria-label="Alejar">−</button>
+          <button id="z-ajustar" aria-label="Ajustar a la ventana">⤢</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="lib/jspdf.umd.min.js"></script>
+<script src="lib/svg2pdf.umd.min.js"></script>
+<script>
+(() => {
+  "use strict";
+  // ---------------------------------------------------------------- worker (Python)
+  const worker = new Worker("worker.js");
+  let sec = 0;
+  const pendientes = new Map();
+  worker.onmessage = (ev) => {
+    const m = ev.data;
+    if (m.progreso) { $("cargando-txt").textContent = m.progreso; estado(m.progreso, "trabajando"); return; }
+    const p = pendientes.get(m.id);
+    if (!p) return;
+    pendientes.delete(m.id);
+    m.ok ? p.resolve(m.valor) : p.reject(new Error(m.error));
+  };
+  const py = (fn, ...args) => new Promise((resolve, reject) => {
+    const id = ++sec;
+    pendientes.set(id, { resolve, reject });
+    worker.postMessage({ id, fn, args });
+  });
+
+  // ---------------------------------------------------------------- utilidades
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, attrs = {}, ...hijos) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") e.className = v;
+      else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+      else if (v !== undefined && v !== null && v !== false) e.setAttribute(k, v === true ? "" : v);
+    }
+    for (const h of hijos.flat()) if (h !== null && h !== undefined) e.append(h instanceof Node ? h : document.createTextNode(h));
+    return e;
+  };
+  const fmt = (v, d = 2) => (v === null || v === undefined || isNaN(v)) ? "—" :
+    Number(v).toLocaleString("es-CL", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const fmtCm = (v) => Number.isInteger(+v) ? String(+v) : String(Math.round(+v * 10) / 10).replace(".", ",");
+  function estado(txt, e = "listo") { $("estado").dataset.e = e; $("estado-txt").textContent = txt; }
+  const guardarLocal = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
+  const leerLocal = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (_) { return null; } };
+
+  // ---------------------------------------------------------------- estado
+  let meta = null, P = null, R = null, nombreCaso = "", vista = "PLANTA";
+  const cacheSvg = new Map();
+  let generando = false, otraVez = false, temporizador = null;
+  const esDT = () => String(P && P.tipo_plano || "").startsWith("Fundación desconectador");
+  const nombres = () => (R && R.nombres) || (esDT() ? meta.nombres_dt : meta.nombres_marco);
+
+  // ---------------------------------------------------------------- pestañas
+  const tabs = ["param", "listas", "cotas", "resumen"];
+  for (const t of tabs) $("t-" + t).addEventListener("click", () => {
+    for (const u of tabs) { $("t-" + u).setAttribute("aria-selected", u === t); $("p-" + u).hidden = u !== t; }
+    guardarLocal("hmv_tab", t);
+  });
+
+  // ---------------------------------------------------------------- formulario de parámetros
+  function construirParametros() {
+    const cont = $("p-param");
+    cont.replaceChildren();
+    const porGrupo = {};
+    for (const d of meta.params) (porGrupo[d.grupo] ||= []).push(d);
+    for (const g of meta.grupos) {
+      if (g.startsWith("DT") && !esDT()) continue;
+      const det = el("details", { class: "sec", open: g === "Formato" || g.startsWith("DT") ? true : null });
+      det.append(el("summary", {}, g));
+      const campos = el("div", { class: "campos" });
+      for (const d of porGrupo[g]) {
+        const id = "par-" + d.clave;
+        const v = P[d.clave];
+        let inp;
+        if (d.opciones) {
+          inp = el("select", { id });
+          for (const o of d.opciones) inp.append(el("option", { value: o, selected: String(v) === String(o) ? true : null }, o));
+        } else if (d.tipo === "int" || d.tipo === "float") {
+          inp = el("input", { id, type: "number", step: d.tipo === "int" ? "1" : "any", value: v });
+        } else {
+          inp = el("input", { id, type: "text", value: v ?? "" });
+        }
+        inp.addEventListener("change", () => {
+          let nv = inp.value;
+          if (d.tipo === "int") nv = parseInt(nv || "0", 10);
+          else if (d.tipo === "float") nv = parseFloat(String(nv).replace(",", ".") || "0");
+          if ((d.tipo === "int" || d.tipo === "float") && isNaN(nv)) { inp.setAttribute("aria-invalid", "true"); return; }
+          inp.removeAttribute("aria-invalid");
+          P[d.clave] = nv;
+          if (d.clave === "tipo_plano") { construirParametros(); construirVistas(); }
+          programar();
+        });
+        const largo = d.tipo === "str" && !d.opciones && String(v ?? "").length > 14;
+        campos.append(el("label", { for: id, class: largo ? "ancho" : null }, d.etiqueta), largo ? el("div", { class: "ancho" }, inp) : inp);
+        if (largo) inp.style.width = "100%";
+      }
+      if (g === "Formato") {
+        campos.append(el("div", { class: "ancho fila-btns" },
+          el("button", { class: "btn chico", onclick: () => $("f-plantilla").click() }, "Subir plantilla DXF…"),
+          el("button", { class: "btn chico", onclick: () => $("f-formato").click() }, "Subir formato del cliente (DXF)…"),
+          el("button", { class: "btn chico", onclick: () => $("f-planilla").click() }, "Importar planilla Excel…")),
+          el("p", { class: "nota ancho" }, "En la web la plantilla y el formato se suben como DXF (si tiene DWG, ábralo en su CAD y guárdelo como DXF)."));
+      }
+      det.append(campos);
+      cont.append(det);
+    }
+  }
+
+  // ---------------------------------------------------------------- listas (notas, referencias, revisiones)
+  const LISTAS = [
+    { clave: "notas", titulo: "Notas del plano", cols: ["Nota"], multilinea: true, simple: true },
+    { clave: "notas_juntas", titulo: "Notas de juntas frías", cols: ["Nota"], multilinea: true, simple: true },
+    { clave: "referencias", titulo: "Referencias", cols: ["Código", "Descripción"] },
+    { clave: "revisiones", titulo: "Revisiones", cols: ["Rev.", "Fecha", "Descripción", "Ejecutó", "Revisó", "Aprobó"] },
+    { clave: "rotulos_extra", titulo: "Rótulos agregados", cols: ["Vista", "X punta", "Y punta", "X texto", "Y texto", "Texto", "Color"] },
+    { clave: "cotas_extra", titulo: "Cotas agregadas", cols: ["Vista", "X1", "Y1", "X2", "Y2", "X línea", "Y línea", "Tipo", "Texto"] },
+    { clave: "cotas_grupo", titulo: "Cotas de grupo", cols: ["Vista", "Elementos", "Desde n°", "Hasta n°", "Distancia (mm)", "Texto"] },
+    { clave: "pernos_pos", titulo: "Pernos de anclaje (disposición manual)", cols: ["X (cm)", "Y (cm)"],
+      ayuda: "Cada fila es un perno, en cm desde el centro del pedestal: X horizontal en la planta (+ a la derecha), Y vertical (+ hacia arriba). Al editar, la disposición pasa a «Manual». En los cortes se ven los pernos de cada dirección y la tabla N°3 los cuenta." },
+    { clave: "esq_fund", titulo: "Esquema: fundaciones y nodos", cols: ["Eje", "Fila", "Nodos (uno por pedestal, con coma)", "Dibujar (Sí/No)"],
+      ayuda: "Cada fila es una fundación del esquema (eje = columna, fila = fila; desde 1). Las distancias entre ejes y entre filas se escriben en Parámetros › Esquema separadas por «;» (ej. 2800;3100), o con el valor de la cota en la pestaña Cotas." },
+  ];
+  function refrescarTC() {
+    const cont = $("listas-tc");
+    if (!cont) return;
+    const abiertos = new Set([...cont.querySelectorAll("details[open] > summary")].map((x) => x.textContent));
+    cont.replaceChildren();
+    titulosCeldasUI(cont);
+    for (const d of cont.querySelectorAll("details")) if (abiertos.has(d.querySelector("summary").textContent)) d.open = true;
+  }
+  function titulosCeldasUI(cont) {
+    if (!R || !R.ok) return;
+    const dt = el("details", { class: "sec" }, el("summary", {}, "Títulos de las vistas"));
+    dt.append(el("p", { class: "nota" }, "Un renglón por línea; los del final que empiezan con ESCALA, SIN ESCALA o VER salen chicos y la escala se mantiene al día. Vacío = automático."));
+    const c1 = el("div", { class: "lista" });
+    for (const [k, auto] of Object.entries(R.titulos || {})) {
+      const inp = el("textarea", { rows: 3, placeholder: auto, "aria-label": "Título " + k }, deDxf((P.titulos_mod || {})[k]));
+      inp.addEventListener("change", () => { const m = (P.titulos_mod ||= {}); if (inp.value.trim()) m[k] = aDxf(inp.value.trim()); else delete m[k]; programar(); });
+      c1.append(el("div", { class: "item" }, el("span", { class: "n" }, (nombres()[k] || k)), el("div", { class: "multi" }, inp)));
+    }
+    dt.append(c1); cont.append(dt);
+    const dc = el("details", { class: "sec" }, el("summary", {}, "Tablas: textos de las celdas"));
+    dc.append(el("p", { class: "nota" }, "«Texto propio» reemplaza lo calculado en esa celda (queda como valor fijo; las demás fórmulas siguen). Vacío = automático."));
+    for (const [tid, celdas] of Object.entries(R.celdas || {})) {
+      const sub = el("details", { class: "sec" }, el("summary", {}, `Tabla ${tid}`));
+      const c2 = el("div", { class: "lista" });
+      for (const c of celdas) {
+        if (!String(c.auto).trim() && !(P.celdas_mod || {})[c.id]) continue;
+        const [, f, k] = c.id.split(":");
+        const inp = el("input", { type: "text", value: deDxf((P.celdas_mod || {})[c.id]), placeholder: c.auto.replace(/\n/g, " / "), "aria-label": `Celda ${c.id}` });
+        inp.addEventListener("change", () => { const m = (P.celdas_mod ||= {}); if (inp.value.trim()) m[c.id] = aDxf(inp.value.trim()); else delete m[c.id]; programar(); });
+        c2.append(el("div", { class: "item" }, el("span", { class: "n" }, `${+f + 1}·${+k + 1}`), el("div", { class: "multi" }, inp)));
+      }
+      sub.append(c2); dc.append(sub);
+    }
+    cont.append(dc);
+  }
+  function construirListas() {
+    const cont = $("p-listas");
+    cont.replaceChildren(el("p", { class: "nota" }, "Cada fila es un elemento. En las notas, las líneas que empiezan con «-» se dibujan como viñetas. Los cambios regeneran el plano."));
+    cont.append(el("div", { id: "listas-tc" }));
+    refrescarTC();
+    for (const L of LISTAS) {
+      if (L.clave === "notas_juntas" && !esDT() && !(P.notas_juntas || []).length) continue;
+      const det = el("details", { class: "sec", open: L.clave === "notas" ? true : null });
+      det.append(el("summary", {}, `${L.titulo} (${(P[L.clave] || []).length})`));
+      const caja = el("div", { class: "lista" });
+      if (L.ayuda) det.append(el("p", { class: "nota" }, L.ayuda));
+      const alCambiar = () => {
+        if (L.clave === "pernos_pos") P.pernos_disp = "Manual (coordenadas)";
+        programar();
+      };
+      const datos = () => (P[L.clave] ||= []);
+      const pintar = () => {
+        caja.replaceChildren();
+        datos().forEach((fila, i) => {
+          const valores = L.simple ? [fila] : (Array.isArray(fila) ? fila : [fila]);
+          const ed = el("div", { class: "multi" });
+          L.cols.forEach((c, k) => {
+            const v = valores[k] ?? "";
+            const inp = L.multilinea ? el("textarea", { rows: Math.min(6, Math.max(2, Math.ceil(String(v).length / 48))), "aria-label": c }, String(v))
+                                     : el("input", { type: "text", value: v, placeholder: c, "aria-label": c });
+            inp.addEventListener("change", () => {
+              if (L.simple) datos()[i] = inp.value;
+              else { const f = [...valores]; while (f.length < L.cols.length) f.push(""); f[k] = inp.value; datos()[i] = f; }
+              alCambiar();
+            });
+            ed.append(inp);
+          });
+          const mover = (d) => { const a = datos(); const j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; pintar(); programar(); };
+          caja.append(el("div", { class: "item" }, el("span", { class: "n" }, String(i + 1)), ed,
+            el("div", { class: "acc" },
+              el("button", { title: "Subir", "aria-label": "Subir", onclick: () => mover(-1) }, "▲"),
+              el("button", { title: "Bajar", "aria-label": "Bajar", onclick: () => mover(1) }, "▼"),
+              el("button", { title: "Quitar", "aria-label": "Quitar", onclick: () => { datos().splice(i, 1); pintar(); alCambiar(); } }, "✕"))));
+        });
+        const btns = el("div", { class: "fila-btns" }, el("button", { class: "btn chico", onclick: () => {
+          datos().push(L.simple ? "" : L.cols.map(() => "")); pintar();
+        } }, "+ Agregar fila"));
+        if (L.clave === "pernos_pos") {
+          const sel = el("select", { "aria-label": "Plantilla de pernos" }, Object.keys(meta.plantillas_pernos || {}).map((k) => el("option", { value: k }, k)));
+          btns.append(sel,
+            el("button", { class: "btn chico", onclick: () => { P.pernos_pos = meta.plantillas_pernos[sel.value].map((q) => q.map(String)); pintar(); alCambiar(); } }, "Usar plantilla"),
+            el("button", { class: "btn chico", onclick: async () => { P.pernos_pos = JSON.parse(await py("pernos_actuales", JSON.stringify(P))); pintar(); alCambiar(); } }, "Partir de los actuales"),
+            el("button", { class: "btn chico", onclick: () => { P.pernos_disp = meta.params.find((d) => d.clave === "pernos_disp").opciones[0]; P.pernos_pos = []; pintar(); construirParametros(); programar(); } }, "Volver a la estándar"));
+        }
+        if (L.clave === "esq_fund") {
+          btns.append(el("button", { class: "btn chico", onclick: async () => { P.esq_fund = JSON.parse(await py("esquema_tabla", JSON.stringify(P))); pintar(); programar(); } }, "Completar con la grilla (ejes × filas)"));
+        }
+        caja.append(btns);
+      };
+      pintar();
+      det.append(caja);
+      cont.append(det);
+    }
+  }
+
+  // ---------------------------------------------------------------- cotas y estribos de la vista
+  async function aplicarCambios(c) {
+    if (!c) return;
+    for (const [k, v] of Object.entries(c)) P[k] = v;
+    construirParametros();
+    await generar();
+  }
+  function construirCotas() {
+    const cont = $("p-cotas");
+    cont.replaceChildren();
+    if (!R || !R.ok) { cont.append(el("p", { class: "nota" }, "Genere el plano para ver sus cotas.")); return; }
+    if (vista === "HOJA") { cont.append(el("p", { class: "nota" }, "Elija una vista (no la lámina completa) para editar sus cotas.")); return; }
+    cont.append(el("p", { class: "nota" }, `Cotas de «${nombres()[vista]}». «Valor» cambia el dibujo (se mueve sólo lo que define esa cota); «Texto» cambia sólo lo que se lee.`));
+    if (vista === "AA_ARM" || vista === "BB_ARM") {
+      const det = el("details", { class: "sec", open: true });
+      det.append(el("summary", {}, `Estribos del pedestal (${R.estribos.length})`));
+      const caja = el("div", { class: "lista" });
+      caja.append(el("p", { class: "nota" }, `Posiciones en cm desde el tope del pedestal (alto sobre la zapata: ${fmtCm(R.hpd)} cm). Al editar, el reparto pasa a manual.`));
+      caja.append(el("div", { class: "chips" }, R.estribos.map((v, i) =>
+        el("span", { class: "chip" }, fmtCm(v), el("button", { "aria-label": `Quitar estribo a ${fmtCm(v)} cm`, title: "Quitar", onclick: async () => {
+          aplicarCambios(JSON.parse(await py("editar_estribos", JSON.stringify(P), "quitar", JSON.stringify({ indice: i }))));
+        } }, "✕")))));
+      const nuevo = el("input", { type: "number", step: "0.5", placeholder: "cm", id: "est-nuevo", "aria-label": "Nuevo estribo (cm desde el tope)" });
+      caja.append(el("div", { class: "fila-btns" }, nuevo, el("button", { class: "btn chico", onclick: async () => {
+        if (nuevo.value === "") return;
+        aplicarCambios(JSON.parse(await py("editar_estribos", JSON.stringify(P), "agregar", JSON.stringify({ valor: +nuevo.value }))));
+      } }, "Agregar estribo")));
+      const gN = el("input", { type: "number", value: 4, id: "g-n", "aria-label": "Cantidad" }), gS = el("input", { type: "number", value: 10, step: "0.5", id: "g-s", "aria-label": "Separación" });
+      const gI = el("input", { type: "number", value: 5, step: "0.5", id: "g-i", "aria-label": "Primer estribo a" });
+      const gD = el("select", { id: "g-d" }, el("option", { value: "losa" }, "desde la losa, hacia arriba"), el("option", { value: "tope" }, "desde el tope, hacia abajo"));
+      for (const x of [gN, gS, gI]) x.style.width = "70px";
+      caja.append(el("p", { class: "subt" }, "Grupo de estribos"),
+        el("div", { class: "fila-btns" }, gN, el("span", { class: "nota" }, "estribos @"), gS, el("span", { class: "nota" }, "cm, el 1° a"), gI, el("span", { class: "nota" }, "cm"), gD,
+          el("button", { class: "btn chico", onclick: async () => {
+            const desde = gD.value;
+            aplicarCambios(JSON.parse(await py("editar_estribos", JSON.stringify(P), "grupo", JSON.stringify({
+              valor: +gI.value, grupo: { n: +gN.value, sep: +gS.value, desde, hacia: desde === "losa" ? "arriba" : "abajo", reemplazar: true } }))));
+          } }, "Agregar grupo")));
+      det.append(caja);
+      cont.append(det);
+    }
+    const lista = (R.cotas[vista] || []);
+    const tabla = el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "Cota"), el("th", {}, "Valor (cm)"), el("th", {}, "Texto"), el("th", {}, "Ocultar"))));
+    const tb = el("tbody");
+    for (const c of lista) {
+      const mod = (P.cotas_mod ||= {})[c.cid] || {};
+      const vIn = el("input", { type: "number", step: "0.5", value: Math.round(c.medida * 100) / 100, "aria-label": "Valor de " + c.cid });
+      vIn.addEventListener("change", async () => {
+        estado("Ajustando el dibujo a la cota…", "trabajando");
+        const r = JSON.parse(await py("resolver_cota", JSON.stringify(P), c.cid, +vIn.value));
+        if (!r.ok) { estado(r.error, "error"); vIn.value = Math.round(c.medida * 100) / 100; return; }
+        if (P.cotas_mod[c.cid] && /^\s*[\d.,]+\s*$/.test(P.cotas_mod[c.cid].texto || "")) delete P.cotas_mod[c.cid].texto;
+        aplicarCambios(r.cambios);
+      });
+      const tIn = el("input", { type: "text", class: "txt", value: mod.texto || "", placeholder: c.texto_auto ? String(c.texto_auto).replace(/\\P/g, " / ") : "automático", "aria-label": "Texto de " + c.cid });
+      tIn.addEventListener("change", () => { const m = (P.cotas_mod[c.cid] ||= {}); if (tIn.value.trim()) m.texto = tIn.value.trim(); else delete m.texto; limpiarMod(c.cid); programar(); });
+      const oIn = el("input", { type: "checkbox", checked: mod.oculta ? true : null, "aria-label": "Ocultar " + c.cid });
+      oIn.addEventListener("change", () => { const m = (P.cotas_mod[c.cid] ||= {}); if (oIn.checked) m.oculta = true; else delete m.oculta; limpiarMod(c.cid); programar(); });
+      tb.append(el("tr", {}, el("td", { class: "cid", title: c.cid }, etiquetaCota(c.cid)), el("td", {}, vIn), el("td", {}, tIn), el("td", {}, oIn)));
+    }
+    tabla.append(tb);
+    cont.append(el("p", { class: "subt" }, `Cotas (${lista.length})`), el("div", { class: "tabla-env" }, tabla));
+    cont.append(textosUI());
+  }
+
+  // ---------------------------------------------------------------- textos del dibujo (todo editable)
+  const aDxf = (t) => String(t || "").replace(/\r/g, "").replace(/\n/g, "\\P");
+  const deDxf = (t) => String(t || "").replace(/\\P/g, "\n");
+  function nombreTexto(t) {
+    const tipo = t.id.split(":")[1] || "";
+    const n = t.id.split(":").pop();
+    if (tipo.startsWith("sim-")) {
+      const k = tipo.slice(4);
+      return ({ eje_num: "Círculo de eje (número)", eje_letra: "Círculo de eje (letra)", nth: "Nivel N.T.H.", nap: "Nivel N.A.P." }[k]
+        || "Corte " + k.replace("corte_", "").replace("_", " ")) + " " + n;
+    }
+    return (tipo === "rot" ? "Rótulo " : "Texto ") + n;
+  }
+  function modTexto(id, cambio) {
+    const m = (P.textos_mod ||= {});
+    const x = Object.assign({}, m[id] || {}, cambio);
+    for (const k of Object.keys(x)) if (x[k] === "" || x[k] === false || x[k] === null || (typeof x[k] === "object" && !Object.keys(x[k]).length)) delete x[k];
+    if (Object.keys(x).length) m[id] = x; else delete m[id];
+    programar();
+  }
+  function textosUI() {
+    const lista = (R.textos || {})[vista] || [];
+    const det = el("details", { class: "sec", open: true }, el("summary", {}, `Textos de la vista (${lista.length})`));
+    det.append(el("p", { class: "nota" }, "Rótulos, textos, círculos de eje, cortes y niveles. Vacío = el texto automático. Para nombrar todos los ejes de una vez: Parámetros › Ejes y textos."));
+    const caja = el("div", { class: "lista" });
+    for (const t of lista) {
+      const m = (P.textos_mod || {})[t.id] || {};
+      const ed = el("div", { class: "multi" });
+      if (t.tipo === "sim") {
+        for (const [tag, val] of Object.entries(t.auto || {})) {
+          const inp = el("input", { type: "text", value: (m.attr || {})[tag] || "", placeholder: `${tag}: ${val}`, "aria-label": `${nombreTexto(t)} ${tag}` });
+          inp.addEventListener("change", () => { const a = Object.assign({}, m.attr || {}); if (inp.value.trim()) a[tag] = inp.value.trim(); else delete a[tag]; modTexto(t.id, { attr: a }); });
+          ed.append(inp);
+        }
+      } else {
+        const inp = el("textarea", { rows: Math.min(4, Math.max(1, String(t.auto).split("\n").length)), placeholder: t.auto, "aria-label": nombreTexto(t) }, deDxf(m.texto));
+        inp.addEventListener("change", () => modTexto(t.id, { texto: aDxf(inp.value.trim()) }));
+        ed.append(inp);
+      }
+      const oc = el("input", { type: "checkbox", checked: m.oculto ? true : null, "aria-label": "Ocultar " + nombreTexto(t) });
+      oc.addEventListener("change", () => modTexto(t.id, { oculto: oc.checked }));
+      caja.append(el("div", { class: "item" }, el("span", { class: "n", title: t.id }, nombreTexto(t)), ed,
+        el("label", { class: "acc", title: "Ocultar" }, oc, " ocultar")));
+    }
+    det.append(caja);
+    return det;
+  }
+  function etiquetaCota(cid) {
+    const [, grupo, resto] = cid.split(":");
+    const n = (resto || "").replace(/^\D*/, "");
+    if (grupo === "est") return "Estribos · " + resto.replace(/(\d+)$/, " $1");
+    if (grupo === "rec") return "Recubrimiento · " + resto.replace("_", " ");
+    if (grupo === "pernos") return "Pernos · tramo " + resto;
+    if (grupo === "ejes") return `Distancia eje ${+resto + 1} – eje ${+resto + 2}`;
+    if (grupo === "filas") return `Distancia fila ${+resto + 1} – fila ${+resto + 2}` + (cid.split(":")[3] ? ` (eje ${cid.split(":")[3]})` : "");
+    if (grupo === "extra") return "Cota agregada " + n;
+    if (grupo === "grupo") return "Cota de grupo " + n;
+    const clave = grupo.split("+")[0];
+    const d = meta.params.find((x) => x.clave === clave);
+    const nombre = d ? d.etiqueta.replace(/\s*\(.*$/, "") : clave;
+    return (nombre.length > 30 ? nombre.slice(0, 29) + "…" : nombre) + " · " + resto;
+  }
+  function limpiarMod(cid) { const m = P.cotas_mod[cid]; if (m && !Object.keys(m).length) delete P.cotas_mod[cid]; }
+
+  // ---------------------------------------------------------------- resumen
+  function historialUI() {
+    const h = leerLocal("hmv_historial") || [];
+    const det = el("details", { class: "sec" }, el("summary", {}, `Versiones autoguardadas (${h.length})`));
+    det.append(el("p", { class: "nota" }, "Cada cambio queda guardado solo en este navegador (no hace falta guardar el caso). Aquí están los estados anteriores, uno por minuto como máximo: «Recuperar» vuelve a ese estado."));
+    const caja = el("div", { class: "lista" });
+    h.forEach((x, i) => caja.append(el("div", { class: "item" },
+      el("span", { class: "n" }, String(i + 1)),
+      el("div", { class: "multi" }, `${new Date(x.guardado).toLocaleString("es-CL")} · ${x.caso || ""} · ${(x.p && x.p.codigo) || ""}`),
+      el("div", { class: "acc" }, el("button", { class: "btn chico", onclick: async () => {
+        P = JSON.parse(await py("normalizar", JSON.stringify(x.p))); nombreCaso = x.caso || nombreCaso; todo();
+        estado("Recuperado el estado del " + new Date(x.guardado).toLocaleString("es-CL"), "listo");
+      } }, "Recuperar")))));
+    det.append(caja);
+    return det;
+  }
+  function construirResumen() {
+    const cont = $("p-resumen");
+    cont.replaceChildren();
+    cont.append(historialUI());
+    if (!R) return;
+    if (!R.ok) { cont.append(el("div", { class: "error" }, R.error)); return; }
+    if (R.avisos.length) cont.append(el("div", { class: "avisos" }, R.avisos.map((a) => el("div", { class: "aviso" }, a))));
+    const q = R.cantidades;
+    const cifras = [["Acero", fmt(R.acero) + " kg"], ["Hormigón", fmt(q.v_horm) + " m³"], ["Emplantillado", fmt(q.v_emp) + " m³"],
+                    ["Excavación", fmt(q.v_exc) + " m³"], ["Pernos", String(q.pernos ?? "—")]];
+    if (q.ganchos) cifras.push(["Ganchos de izaje", String(q.ganchos)]);
+    cont.append(el("div", { class: "cifras" }, cifras.map(([k, v]) => el("div", { class: "cifra" }, el("b", {}, v), el("span", {}, k)))));
+    const t = el("table", {}, el("thead", {}, el("tr", {}, ["Ítem", "Ø", "Tipo", "Cant.", "a", "b", "c", "Parcial (m)", "Peso (kg)"].map((h) => el("th", {}, h)))));
+    const tb = el("tbody");
+    for (const b of R.barras) tb.append(el("tr", {}, el("td", {}, b.marca), el("td", { class: "num" }, String(b.d)), el("td", {}, b.tipo), el("td", { class: "num" }, String(b.cant)),
+      el("td", { class: "num" }, fmtCm(b.a)), el("td", { class: "num" }, fmtCm(b.b)), el("td", { class: "num" }, fmtCm(b.c)), el("td", { class: "num" }, fmt(b.Lp)), el("td", { class: "num" }, fmt(b.peso))));
+    t.append(tb);
+    cont.append(el("p", { class: "subt" }, "Tabla N°1 – barras"), el("div", { class: "tabla-env" }, t),
+      el("p", { class: "nota" }, `Generado en ${fmt(R.segundos, 1)} s. El DXF lleva las tablas con fórmulas (${R.tablas.map((x) => x.id).join(", ")}).`));
+  }
+
+  // ---------------------------------------------------------------- vistas y visor
+  function construirVistas() {
+    const nav = $("vistas");
+    nav.replaceChildren();
+    const n = nombres();
+    for (const v of [...meta.vistas, "HOJA"]) {
+      nav.append(el("button", { "aria-pressed": v === vista, onclick: () => { vista = v; construirVistas(); mostrarVista(); construirCotas(); } },
+        v === "HOJA" ? "Lámina completa" : (n[v] || v)));
+    }
+  }
+  let vx = 0, vy = 0, vk = 1, natW = 1, natH = 1;
+  function aplicarTransform() { $("hoja").style.transform = `translate(${vx}px, ${vy}px) scale(${vk})`; }
+  function ajustar() {
+    const m = $("mesa").getBoundingClientRect();
+    if (!natW || !natH) return;
+    vk = Math.min((m.width - 40) / natW, (m.height - 40) / natH);
+    vx = (m.width - natW * vk) / 2; vy = (m.height - natH * vk) / 2;
+    aplicarTransform();
+  }
+  function ponerSvg(svgTxt, leyenda) {
+    const hoja = $("hoja");
+    hoja.innerHTML = svgTxt.replace(/^<\?xml[^>]*>\s*/, "");
+    const s = hoja.querySelector("svg");
+    if (!s) return;
+    const vb = (s.getAttribute("viewBox") || "0 0 100 100").split(/[\s,]+/).map(Number);
+    const ratio = vb[3] / vb[2] || 1;
+    natW = 1400; natH = natW * ratio;
+    s.setAttribute("width", natW); s.setAttribute("height", natH);
+    $("leyenda").hidden = !leyenda; $("leyenda").textContent = leyenda || "";
+    ajustar();
+  }
+  async function mostrarVista() {
+    if (!R || !R.ok) return;
+    const clave = vista + "|" + (vista === "HOJA" ? (P.ctb || "") : "");
+    if (cacheSvg.has(clave)) { ponerSvg(cacheSvg.get(clave), leyendaDe(vista)); return; }
+    $("cargando").hidden = false;
+    $("cargando-txt").textContent = vista === "HOJA" ? "Dibujando la lámina completa con el CTB (puede tardar cerca de un minuto)…" : "Dibujando la vista…";
+    estado(vista === "HOJA" ? "Dibujando la lámina completa…" : "Dibujando la vista…", "trabajando");
+    try {
+      const s = vista === "HOJA" ? await py("svg_lamina", P.ctb || "", P.papel_plot && P.papel_plot !== "Según plantilla" ? P.papel_plot : "A0")
+                                 : await py("svg_vista", vista);
+      cacheSvg.set(clave, s);
+      if (clave.startsWith(vista + "|")) ponerSvg(s, leyendaDe(vista));
+      estado("Listo", "listo");
+    } catch (e) { estado("No se pudo dibujar: " + e.message, "error"); }
+    $("cargando").hidden = true;
+  }
+  function leyendaDe(v) {
+    if (v === "HOJA") return `Lámina · CTB ${P.ctb || "GN-PLOT-HMV.ctb"}`;
+    const k = { PLANTA: "esc_planta", AA_FORMAS: "esc_aaf", BB_FORMAS: "esc_bbf", AA_ARM: "esc_aaa", BB_ARM: "esc_bba", CC: "esc_cc", ESQUEMA: "esc_esq" }[v];
+    return `${(nombres()[v] || v)} · ESC 1:${P[k]}`;
+  }
+  // pan / zoom
+  const mesa = $("mesa");
+  let arr = null;
+  mesa.addEventListener("pointerdown", (e) => { if (e.target.closest(".controles")) return; arr = { x: e.clientX - vx, y: e.clientY - vy }; mesa.classList.add("arrastrando"); mesa.setPointerCapture(e.pointerId); });
+  mesa.addEventListener("pointermove", (e) => { if (!arr) return; vx = e.clientX - arr.x; vy = e.clientY - arr.y; aplicarTransform(); });
+  mesa.addEventListener("pointerup", () => { arr = null; mesa.classList.remove("arrastrando"); });
+  mesa.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const r = mesa.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    const f = e.deltaY < 0 ? 1.18 : 1 / 1.18;
+    vx = mx - (mx - vx) * f; vy = my - (my - vy) * f; vk *= f; aplicarTransform();
+  }, { passive: false });
+  mesa.addEventListener("dblclick", ajustar);
+  const zoom = (f) => { const r = mesa.getBoundingClientRect(); const mx = r.width / 2, my = r.height / 2; vx = mx - (mx - vx) * f; vy = my - (my - vy) * f; vk *= f; aplicarTransform(); };
+  $("z-mas").onclick = () => zoom(1.25); $("z-menos").onclick = () => zoom(0.8); $("z-ajustar").onclick = ajustar;
+  window.addEventListener("resize", ajustar);
+
+  // ---------------------------------------------------------------- generación
+  // autoguardado: cada cambio queda en este navegador (último + historial de 25 estados, uno por minuto)
+  let ultimoHist = 0;
+  function autoguardar() {
+    if (!P) return;
+    const ahora = new Date();
+    guardarLocal("hmv_trabajo", { caso: nombreCaso, p: P, guardado: ahora.toISOString() });
+    if (Date.now() - ultimoHist > 60000) {
+      ultimoHist = Date.now();
+      const h = leerLocal("hmv_historial") || [];
+      h.unshift({ caso: nombreCaso, p: P, guardado: ahora.toISOString() });
+      guardarLocal("hmv_historial", h.slice(0, 25));
+    }
+    const a = $("autoguardado");
+    if (a) a.textContent = "Autoguardado " + ahora.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  function programar() { autoguardar(); clearTimeout(temporizador); temporizador = setTimeout(generar, 650); }
+
+  // deshacer / rehacer: un estado por cada plano generado
+  const hist = []; let histI = -1, histAplicando = false;
+  function histRegistrar() {
+    if (histAplicando || !P) return;
+    const j = JSON.stringify(P);
+    if (histI >= 0 && hist[histI] === j) return;
+    hist.splice(histI + 1);
+    hist.push(j);
+    if (hist.length > 200) hist.shift();
+    histI = hist.length - 1;
+    histBotones();
+  }
+  function histBotones() {
+    $("btn-deshacer").disabled = histI <= 0;
+    $("btn-rehacer").disabled = histI >= hist.length - 1;
+  }
+  async function histIr(i) {
+    if (i < 0 || i >= hist.length) return;
+    histI = i; histAplicando = true;
+    P = JSON.parse(hist[i]);
+    construirParametros(); construirListas();
+    await generar();
+    histAplicando = false; histBotones();
+    autoguardar();
+  }
+  $("btn-deshacer").addEventListener("click", () => histIr(histI - 1));
+  $("btn-rehacer").addEventListener("click", () => histIr(histI + 1));
+  document.addEventListener("keydown", (ev) => {
+    const t = ev.target && ev.target.tagName;
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(t)) return;
+    if ((ev.ctrlKey || ev.metaKey) && !ev.altKey) {
+      const k = ev.key.toLowerCase();
+      if (k === "z" && !ev.shiftKey) { ev.preventDefault(); histIr(histI - 1); }
+      else if (k === "y" || (k === "z" && ev.shiftKey)) { ev.preventDefault(); histIr(histI + 1); }
+    }
+  });
+  async function generar() {
+    if (generando) { otraVez = true; return; }
+    generando = true;
+    estado("Generando el plano…", "trabajando");
+    try {
+      R = JSON.parse(await py("generar", JSON.stringify(P)));
+      cacheSvg.clear();
+      if (!R.ok) { estado("Error al generar: " + R.error, "error"); construirResumen(); }
+      else {
+        estado(R.avisos.length ? `Listo · ${R.avisos.length} aviso(s) en Resumen` : `Listo · generado en ${fmt(R.segundos, 1)} s`, "listo");
+        $("codigo").textContent = `${P.codigo || ""} · ${nombreCaso}` + (R.dt ? " · desconectador tripolar" : "");
+        construirVistas(); construirResumen(); construirCotas(); refrescarTC(); histRegistrar();
+        await mostrarVista();
+        autoguardar();
+      }
+    } catch (e) { estado("Error: " + e.message, "error"); }
+    generando = false;
+    if (otraVez) { otraVez = false; generar(); }
+  }
+
+  // ---------------------------------------------------------------- casos y archivos
+  function llenarCasos() {
+    const s = $("sel-caso");
+    s.replaceChildren();
+    const t = esDT() ? "dt" : "marco";
+    for (const c of meta.casos.filter((c) => c.tipo === t)) s.append(el("option", { value: c.archivo, selected: c.nombre === nombreCaso ? true : null }, c.nombre));
+    if (!meta.casos.some((c) => c.nombre === nombreCaso)) s.prepend(el("option", { value: "", selected: true }, nombreCaso || "Caso propio"));
+    $("sel-tipo").value = t;
+  }
+  async function cargarCaso(archivo) {
+    P = JSON.parse(await py("cargar_caso", archivo));
+    nombreCaso = archivo.replace("_parametros.json", "");
+    todo();
+  }
+  function todo() { llenarCasos(); construirParametros(); construirListas(); construirVistas(); generar(); }
+
+  $("sel-caso").addEventListener("change", (e) => { if (e.target.value) cargarCaso(e.target.value); });
+  $("sel-tipo").addEventListener("change", (e) => {
+    const c = meta.casos.find((c) => c.tipo === e.target.value);
+    if (c) cargarCaso(c.archivo);
+  });
+  $("btn-abrir").onclick = () => $("f-caso").click();
+  $("f-caso").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try { P = JSON.parse(await py("normalizar", await f.text())); nombreCaso = f.name.replace(/(_parametros)?\.json$/i, ""); todo(); }
+    catch (err) { estado("No se pudo leer el caso: " + err.message, "error"); }
+    e.target.value = "";
+  });
+  async function subir(input, alListo) {
+    input.addEventListener("change", async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      estado("Subiendo " + f.name + "…", "trabajando");
+      try { const ruta = await py("subir", f.name, new Uint8Array(await f.arrayBuffer())); await alListo(ruta, f.name); }
+      catch (err) { estado("No se pudo usar el archivo: " + err.message, "error"); }
+      e.target.value = "";
+    });
+  }
+  subir($("f-plantilla"), async (ruta) => { P.plantilla = ruta; construirParametros(); generar(); });
+  subir($("f-formato"), async (ruta) => { P.formato_archivo = ruta; P.formato = meta.params.find((d) => d.clave === "formato").opciones[2]; construirParametros(); generar(); });
+  subir($("f-planilla"), async (ruta) => {
+    const r = JSON.parse(await py("importar_planilla", ruta, JSON.stringify(P)));
+    if (!r.ok) { estado("No se pudo importar la planilla: " + r.error, "error"); return; }
+    P = r.params; construirParametros(); generar();
+  });
+
+  // descargas (la página no puede descargar sola: se usa el permiso «downloads» del visor)
+  let dl = null;
+  const descargas = async () => (dl ||= (window.claude && window.claude.use) ? await window.claude.use("downloads") : null);
+  async function guardar(nombre, datos) {
+    const d = await descargas();
+    if (!d) {                                    // fuera de claude.ai (GitHub Pages, Netlify, servidor propio)
+      const url = URL.createObjectURL(datos instanceof Blob ? datos : new Blob([datos]));
+      const a = el("a", { href: url, download: nombre });
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      estado("Archivo descargado: " + nombre, "listo");
+      return;
+    }
+    try { await d.save({ filename: nombre, data: datos }); estado("Archivo entregado: " + nombre, "listo"); }
+    catch (e) { estado(e && e.code === "declined" ? "Descarga cancelada" : "No se pudo guardar: " + ((e && e.message) || e), e && e.code === "declined" ? "listo" : "error"); }
+  }
+  $("btn-guardar").onclick = () => guardar(`${(P.codigo || nombreCaso || "caso")}_parametros.json`, JSON.stringify(P, null, 2));
+  $("btn-zip").onclick = async () => {
+    estado("Preparando DXF + LISP…", "trabajando");
+    try { const z = await py("exportar_zip", JSON.stringify(P)); await guardar(`${P.codigo || "plano"}.zip`, new Blob([z], { type: "application/zip" })); }
+    catch (e) { estado("No se pudo exportar: " + e.message, "error"); }
+  };
+  $("btn-pdf").onclick = async () => {
+    try {
+      estado("Dibujando la lámina para el PDF (cerca de un minuto)…", "trabajando");
+      const hoja = P.papel_plot && P.papel_plot !== "Según plantilla" ? P.papel_plot : "A0";
+      const clave = "HOJA|" + (P.ctb || "");
+      const txt = cacheSvg.get(clave) || await py("svg_lamina", P.ctb || "", hoja);
+      cacheSvg.set(clave, txt);
+      estado("Armando el PDF…", "trabajando");
+      const tam = { A0: [1189, 841], A1: [841, 594], A2: [594, 420], A3: [420, 297], A4: [297, 210] }[hoja] || [1189, 841];
+      const svgEl = new DOMParser().parseFromString(txt.replace(/^<\?xml[^>]*>\s*/, ""), "image/svg+xml").documentElement;
+      const doc = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: tam, compress: true });
+      await doc.svg(svgEl, { x: 0, y: 0, width: tam[0], height: tam[1] });
+      await guardar(`${P.codigo || "plano"}.pdf`, doc.output("blob"));
+    } catch (e) { estado("No se pudo armar el PDF: " + e.message, "error"); }
+  };
+
+  window.addEventListener("pagehide", autoguardar);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") autoguardar(); });
+
+  // ---------------------------------------------------------------- inicio
+  (async () => {
+    try {
+      meta = JSON.parse(await py("init"));
+      for (const id of ["sel-tipo", "sel-caso", "btn-abrir", "btn-guardar", "btn-zip", "btn-pdf"]) $(id).disabled = false;
+      const t = leerLocal("hmv_tab");
+      if (t && tabs.includes(t)) $("t-" + t).click();
+      const previo = leerLocal("hmv_trabajo");
+      if (previo && previo.p && previo.p.codigo) {
+        P = JSON.parse(await py("normalizar", JSON.stringify(previo.p)));
+        nombreCaso = previo.caso || "Último trabajo";
+        todo();
+        if (previo.guardado) setTimeout(() => { const a = $("autoguardado"); if (a) a.textContent = "Recuperado el trabajo del " + new Date(previo.guardado).toLocaleString("es-CL"); }, 50);
+      } else {
+        const c = meta.casos.find((c) => c.nombre.startsWith("MLDV")) || meta.casos[0];
+        await cargarCaso(c.archivo);
+      }
+    } catch (e) {
+      $("cargando-txt").textContent = "No se pudo iniciar Python en este navegador: " + e.message;
+      estado("No se pudo iniciar: " + e.message, "error");
+    }
+  })();
+})();
+</script>
+
+</body></html>
